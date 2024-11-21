@@ -13,7 +13,7 @@ p.setGravity(0, 0, 0)
 planeId = p.loadURDF("plane.urdf")
 startPos = [0, 0, 1.2]
 startOrientation = p.getQuaternionFromEuler([0, 0, 0])
-go2_id = p.loadURDF("unitree_ros/robots/go2_description/urdf/go2_description.urdf", startPos, startOrientation, useFixedBase=True)
+go2_id = p.loadURDF("/go2_description/urdf/go2_description.urdf", startPos, startOrientation, useFixedBase=True)
 go2Pos, go2Orn = p.getBasePositionAndOrientation(go2_id)
 
 # print the joints of the robot
