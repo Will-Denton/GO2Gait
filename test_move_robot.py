@@ -7,14 +7,14 @@ DEBUG = False
 # Connect to the PyBullet physics server
 physicsClient = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
-p.setGravity(0, 0, 0)
+p.setGravity(0, 0, -9.8)
 p.setRealTimeSimulation(1)
 
 # Load the plane and the GO2 robot
 planeId = p.loadURDF("plane.urdf")
-startPos = [0, 0, 1.2]
+startPos = [0, 0, 0.8]
 startOrientation = p.getQuaternionFromEuler([0, 0, 0])
-go2_id = p.loadURDF("/go2_description/urdf/go2_description.urdf", startPos, startOrientation, useFixedBase=True)
+go2_id = p.loadURDF("/go2_description/urdf/go2_description.urdf", startPos, startOrientation, useFixedBase=False)
 go2Pos, go2Orn = p.getBasePositionAndOrientation(go2_id)
 
 # static list of the joints of the robot
@@ -67,25 +67,29 @@ leg_joints = {
 
 walk_sequence = [
     {
-        # "FR_thigh_joint": -0.5,
-        "FR_calf_joint": 0.3,
+        "FR_thigh_joint": 1.0,
+        "FL_thigh_joint": 1.0,
+        "RR_thigh_joint": 1.0,
+        "RL_thigh_joint": 1.0,
+        "FR_calf_joint": -1.7,
+        "FL_calf_joint": -1.7,
+        "RR_calf_joint": -1.7,
+        "RL_calf_joint": -1.7,
+        "FL_hip_joint": 0.0,
+        "FR_hip_joint": 0.0,
+        "RL_hip_joint": 0.0,
+        "RR_hip_joint": 0.0,
     },
-    # {
-    #     "FR_thigh_joint": -1.0,
-    #     "FR_calf_joint": 0.0,
-    # },
 ]
 
 timing_sequence = [
     1.0,
-    # 2.0,
 ]
 
 try:
-    for _ in range(int(1.0*240)):
+    for _ in range(int(0.2*240)):
             p.stepSimulation()
-            sleep(1 / 120)
-
+            sleep(1 / 240)
     for i in range(len(walk_sequence)):
         phase = walk_sequence[i]
         indicies = [leg_joints[joint] for joint in phase.keys()]
