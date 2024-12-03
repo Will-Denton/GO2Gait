@@ -2,12 +2,13 @@ import pybullet as p
 from time import sleep
 import pybullet_data
 
-DEBUG = True
+DEBUG = False
 
 # Connect to the PyBullet physics server
 physicsClient = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.setGravity(0, 0, 0)
+p.setRealTimeSimulation(1)
 
 # Load the plane and the GO2 robot
 planeId = p.loadURDF("plane.urdf")
@@ -15,14 +16,6 @@ startPos = [0, 0, 1.2]
 startOrientation = p.getQuaternionFromEuler([0, 0, 0])
 go2_id = p.loadURDF("/go2_description/urdf/go2_description.urdf", startPos, startOrientation, useFixedBase=True)
 go2Pos, go2Orn = p.getBasePositionAndOrientation(go2_id)
-
-# print the joints of the robot
-if DEBUG:
-    num_joints = p.getNumJoints(go2_id)
-    print(f"Number of joints: {num_joints}")
-    for joint in range(num_joints):
-        joint_info = p.getJointInfo(go2_id, joint)
-        print(f"Joint {joint}: {joint_info[1].decode('utf-8')} with angle: {p.getJointState(go2_id, joint)}")
 
 # static list of the joints of the robot
 leg_joints = {
@@ -68,11 +61,14 @@ leg_joints = {
     "radar_joint": 39,
 }
 
+# Front thigh joints have a range of -1.5708 to 3.4907
+# Rear thigh joints have a range of -0.5236 to 4.5379
+# Calf joints have a range of -2.7227 to 0.
+
 walk_sequence = [
     {
-        # "FR_thigh_joint": -1.0,
-        "FR_calf_joint": 0.2,
-        # "FR_calflower1_joint": 1.0,
+        # "FR_thigh_joint": -0.5,
+        "FR_calf_joint": 0.3,
     },
     # {
     #     "FR_thigh_joint": -1.0,
@@ -81,14 +77,14 @@ walk_sequence = [
 ]
 
 timing_sequence = [
-    2.0,
+    1.0,
     # 2.0,
 ]
 
 try:
     for _ in range(int(1.0*240)):
             p.stepSimulation()
-            sleep(1 / 240)
+            sleep(1 / 120)
 
     for i in range(len(walk_sequence)):
         phase = walk_sequence[i]
@@ -104,7 +100,15 @@ try:
             p.stepSimulation()
             sleep(1 / 240)
     while True:
-        p.stepSimulation()
+        # print the joints of the robot
+        if DEBUG:
+            num_joints = p.getNumJoints(go2_id)
+            print(f"Number of joints: {num_joints}")
+            for joint in range(num_joints):
+                joint_info = p.getJointInfo(go2_id, joint)
+                print(f"Joint {joint}: {joint_info[1].decode('utf-8')} with angle: {p.getJointState(go2_id, joint)}")
+                p.stepSimulation()
+            DEBUG = False
         sleep(1 / 240)
 except KeyboardInterrupt:
     print("Closing the simulation")
