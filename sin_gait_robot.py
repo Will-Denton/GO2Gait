@@ -79,9 +79,14 @@ def add_robot():
             config["amplitude"] = (config["max_angle"] - config["min_angle"]) / 2
             config["offset"] = (config["max_angle"] + config["min_angle"]) / 2
 
+    for _, config in shuffle_joint_configs.items():
+        if config["wave"] != "constant":
+            config["amplitude"] = (config["max_angle"] - config["min_angle"]) / 2
+            config["offset"] = (config["max_angle"] + config["min_angle"]) / 2
+
     return go2_id
 
-def run_sim():
+def run_sim(use_run_gait=True):
     # Connect to the PyBullet physics server
     physicsClient = connect_pybullet()
 
@@ -92,8 +97,9 @@ def run_sim():
     go2_id = add_robot()
 
     # Setup the joint position arrays
-    joint_indices = {name: leg_joints[name] for name in run_joint_configs}
-    joint_angle_logs = {joint_name: [] for joint_name in run_joint_configs.keys()}
+    joints_config = run_joint_configs if use_run_gait else shuffle_joint_configs
+    joint_indices = {name: leg_joints[name] for name in joints_config}
+    joint_angle_logs = {joint_name: [] for joint_name in joints_config.keys()}
     time_log = []
     
     # Run the simulation
@@ -106,7 +112,7 @@ def run_sim():
             # Calculate elapsed time
             elapsed_time = time() - start_time
             target_positions = []
-            for joint_name, config in run_joint_configs.items():
+            for joint_name, config in joints_config.items():
                 if config["wave"] == "sin":
                     angle = config["offset"] + config["amplitude"] * math.sin(2 * math.pi * config["frequency"] * elapsed_time + config["angle_offset"])
                 elif config["wave"] == "cos":
@@ -154,4 +160,4 @@ def run_sim():
 
 
 if __name__ == "__main__":
-    run_sim()
+    run_sim(use_run_gait=True)
